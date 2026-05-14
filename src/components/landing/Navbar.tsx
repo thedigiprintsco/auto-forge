@@ -22,9 +22,11 @@ export default function Navbar() {
           <Link href="#faq" className="hover:text-primary transition-colors">FAQ</Link>
         </div>
         <div className="flex items-center gap-4">
-          <Button variant="ghost" className="text-silver-slate hover:text-white hover:bg-white/5">
-            Sign In
-          </Button>
+          <Link href="/admin">
+            <Button variant="ghost" className="text-silver-slate hover:text-white hover:bg-white/5">
+              Sign In
+            </Button>
+          </Link>
           <Link href="#bundles">
             <Button className="bg-primary text-white hover:bg-primary/90 shadow-[0_0_20px_rgba(59,130,246,0.3)] cursor-pointer">
               Explore the Forge

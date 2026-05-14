@@ -21,6 +21,11 @@ export async function POST(req: NextRequest) {
     // Get current user (if any)
     const { data: { user } } = await supabase.auth.getUser()
 
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+    if (!siteUrl) {
+      throw new Error('NEXT_PUBLIC_SITE_URL is required')
+    }
+
     // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -38,8 +43,8 @@ export async function POST(req: NextRequest) {
         },
       ],
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/products/${product.slug}`,
+      success_url: `${siteUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${siteUrl}/#bundles`,
       customer_email: user?.email,
       metadata: {
         productId: product.id,

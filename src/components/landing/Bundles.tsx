@@ -5,54 +5,38 @@ import { Check, Sparkles, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useCheckout } from '@/hooks/use-checkout'
 
-const bundles = [
-  {
-    id: '550e8400-e29b-41d4-a716-446655440000', // Solopreneur OS
-    name: 'Solopreneur OS',
-    headline: 'The Central Command for Your One-Person Empire.',
-    price: '$97',
-    benefit: 'Reclaim 15+ hours a week by centralizing your business operations into one seamless, distraction-free environment.',
-    features: [
-      'Unified CRM: Manage clients and leads in Notion.',
-      'Project Hub: Track every task in a high-performance dashboard.',
-      'Automated Finance Tracker: Instant insights into your revenue.',
-    ],
-    accent: 'primary',
-    image: '/solopreneur-os-thumb.png',
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440001',
-    name: 'AI Marketing Power-Pack',
-    headline: 'Your Personal Marketing Team, In a Single ZIP.',
-    price: '$49',
-    benefit: 'Turn AI from a "toy" into a high-output content engine that drives leads and sales 24/7.',
-    features: [
-      '500+ Tested Prompts: High-conversion hooks for social media.',
-      'SEO Article Architect: Generate ranking content in minutes.',
-      'Email Sequence Suite: Automated sequences that actually sell.',
-    ],
-    accent: 'secondary',
-    featured: true,
-    image: '/ai-marketing-power-pack-thumb.png',
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440002',
-    name: 'ADHD Focus System',
-    headline: 'Productivity That Respects Your Brain.',
-    price: '$67',
-    benefit: 'Stop fighting against your brain. Use a system built for neurodivergent focus to crush your goals.',
-    features: [
-      'Visual Task Management: Dopamine-friendly workflow.',
-      'Brain Dump Terminal: Capture ideas instantly.',
-      'Energy-Level Tracking: Match tasks to your focus cycles.',
-    ],
-    accent: 'accent',
-    image: '/adhd-focus-system-thumb.png',
-  },
-]
+interface Product {
+  id: string
+  name: string
+  description: string
+  price_cents: number
+  slug: string
+  image_url: string | null
+  metadata: {
+    value_prop?: string
+    features?: string[]
+  } | null
+}
 
-export default function Bundles() {
+export default function Bundles({ initialProducts }: { initialProducts: Product[] }) {
   const { checkout, isLoading } = useCheckout()
+
+  // Map Supabase products to the display format
+  const products = initialProducts.map((p, index) => ({
+    id: p.id,
+    name: p.name,
+    headline: p.metadata?.value_prop || p.description,
+    price: `$${(p.price_cents / 100).toFixed(0)}`,
+    benefit: p.description,
+    features: p.metadata?.features || [
+      'Digital Access',
+      'Lifetime Updates',
+      'Premium Support'
+    ],
+    accent: index % 3 === 0 ? 'primary' : index % 3 === 1 ? 'secondary' : 'accent',
+    featured: p.slug === 'ai-marketing-power-pack',
+    image: p.image_url || '/hero.png',
+  }))
 
   return (
     <section id="bundles" className="py-24 sm:py-32 bg-deep-space">
@@ -66,7 +50,7 @@ export default function Bundles() {
         </div>
         
         <div className="mx-auto mt-16 grid max-w-lg grid-cols-1 gap-y-12 sm:mt-20 lg:max-w-none lg:grid-cols-3 lg:gap-x-8">
-          {bundles.map((bundle) => (
+          {products.map((bundle) => (
             <div
               key={bundle.name}
               className={`relative flex flex-col rounded-3xl border border-white/5 bg-forge-gray/50 backdrop-blur-sm overflow-hidden ${
@@ -113,7 +97,7 @@ export default function Bundles() {
                 </Button>
                 
                 <ul className="mt-8 space-y-4 text-sm leading-6 text-silver-slate">
-                  {bundle.features.map((feature) => (
+                  {bundle.features.map((feature: string) => (
                     <li key={feature} className="flex gap-x-3">
                       <Check className="h-5 w-5 flex-none text-ai-teal" aria-hidden="true" />
                       {feature}
