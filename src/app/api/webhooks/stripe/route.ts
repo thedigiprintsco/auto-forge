@@ -54,7 +54,24 @@ export async function POST(req: NextRequest) {
 
     console.log(`Order ${order.id} completed successfully for product ${productId}`)
     
-    // 3. TODO: Trigger email delivery (using Resend or similar)
+    // 3. Trigger email delivery
+    if (session.customer_details?.email) {
+      const { data: product } = await supabase
+        .from('products')
+        .select('name, download_url')
+        .eq('id', productId)
+        .single()
+
+      if (product) {
+        const { sendOrderConfirmationEmail } = await import('@/lib/resend')
+        await sendOrderConfirmationEmail({
+          to: session.customer_details.email,
+          productName: product.name,
+          price: `$${(session.amount_total! / 100).toFixed(2)}`,
+          downloadLink: product.download_url || `${process.env.NEXT_PUBLIC_SITE_URL}/checkout/success?session_id=${session.id}`,
+        })
+      }
+    }
   }
 
   return NextResponse.json({ received: true })
