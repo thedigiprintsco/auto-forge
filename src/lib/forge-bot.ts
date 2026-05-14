@@ -104,7 +104,7 @@ export class ForgeBot {
           model: "gpt-4o",
           messages: [{ role: "user", content: prompt }],
         });
-        content = response.choices[0].message.content || "";
+        content = response.choices?.[0]?.message?.content || "";
       } else if (process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY !== 'placeholder') {
         const response = await this.anthropic.messages.create({
           model: "claude-3-5-sonnet-20240620",
@@ -112,7 +112,7 @@ export class ForgeBot {
           messages: [{ role: "user", content: prompt }],
         });
         // @ts-expect-error - Anthropic SDK response structure
-        content = response.content[0].text || "";
+        content = (response.content as any)?.[0]?.text || "";
       } else {
         // Mock fallback
         console.warn('AI API key missing, using template fallback.');
@@ -147,7 +147,7 @@ export class ForgeBot {
         size: "1024x1024",
       });
 
-      return response.data[0].url;
+      return response.data?.[0]?.url;
     } catch (err) {
       console.error('Image generation failed.', err);
       return undefined;
