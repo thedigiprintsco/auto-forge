@@ -1,8 +1,24 @@
+'use client'
+
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { CheckCircle2, Download, ArrowRight } from 'lucide-react'
+import { useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
+import posthog from 'posthog-js'
 
-export default function CheckoutSuccessPage() {
+function SuccessContent() {
+  const searchParams = useSearchParams()
+  const sessionId = searchParams.get('session_id')
+
+  useEffect(() => {
+    if (sessionId) {
+      posthog.capture('purchase_success', {
+        stripe_session_id: sessionId,
+      })
+    }
+  }, [sessionId])
+
   return (
     <div className="min-h-screen bg-deep-space text-white flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-forge-gray/50 border border-white/10 rounded-3xl p-8 backdrop-blur-sm text-center">
@@ -32,9 +48,21 @@ export default function CheckoutSuccessPage() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-white/5 text-sm text-zinc-600">
-          Order ID: <span className="text-silver-slate font-mono">ORD-PLACEHOLDER</span>
+          Order ID: <span className="text-silver-slate font-mono">{sessionId ? sessionId.substring(0, 12) + '...' : 'ORD-PLACEHOLDER'}</span>
         </div>
       </div>
     </div>
+  )
+}
+
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-deep-space flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <SuccessContent />
+    </Suspense>
   )
 }

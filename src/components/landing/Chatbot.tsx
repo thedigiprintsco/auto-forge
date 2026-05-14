@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { MessageSquare, X, Send, Bot, User, Loader2, Minus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import posthog from 'posthog-js'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -41,6 +42,11 @@ export default function Chatbot() {
     setMessages((prev) => [...prev, userMessage])
     setInput('')
     setIsLoading(true)
+
+    // Track support request
+    posthog.capture('support_message_sent', {
+      message_length: input.length
+    })
 
     try {
       const response = await fetch('/api/chat', {

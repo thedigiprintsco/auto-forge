@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { Check, Sparkles, Loader2 } from 'lucide-react'
+import { Check, Sparkles, Loader2, AlertCircle, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useCheckout } from '@/hooks/use-checkout'
 
@@ -19,7 +19,7 @@ interface Product {
 }
 
 export default function Bundles({ initialProducts }: { initialProducts: Product[] }) {
-  const { checkout, isLoading } = useCheckout()
+  const { checkout, isLoading, error, setError } = useCheckout()
 
   // Map Supabase products to the display format
   const products = initialProducts.map((p, index) => ({
@@ -49,6 +49,18 @@ export default function Bundles({ initialProducts }: { initialProducts: Product[
           </p>
         </div>
         
+        {error && (
+          <div className="mx-auto mt-8 max-w-lg rounded-2xl bg-red-500/10 border border-red-500/20 p-4 flex items-center justify-between text-red-400">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-5 w-5" />
+              <p className="text-sm font-medium">{error}</p>
+            </div>
+            <button onClick={() => setError(null)} className="p-1 hover:bg-white/5 rounded-lg transition-colors">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
         <div className="mx-auto mt-16 grid max-w-lg grid-cols-1 gap-y-12 sm:mt-20 lg:max-w-none lg:grid-cols-3 lg:gap-x-8">
           {products.map((bundle) => (
             <div

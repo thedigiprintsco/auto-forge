@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import posthog from 'posthog-js'
 
 export function useCheckout() {
   const [isLoading, setIsLoading] = useState(false)
@@ -9,6 +10,12 @@ export function useCheckout() {
   const checkout = async (productId: string) => {
     setIsLoading(true)
     setError(null)
+
+    // Track checkout attempt
+    posthog.capture('checkout_started', { 
+      product_id: productId,
+      timestamp: new Date().toISOString()
+    })
 
     try {
       const response = await fetch('/api/checkout', {
@@ -31,12 +38,19 @@ export function useCheckout() {
         throw new Error('No checkout URL received')
       }
     } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred'
       console.error('Checkout error:', err)
-      setError(err instanceof Error ? err.message : 'An unknown error occurred')
+      setError(errorMessage)
+      
+      // Track checkout error
+      posthog.capture('checkout_error', {
+        product_id: productId,
+        error: errorMessage
+      })
     } finally {
       setIsLoading(false)
     }
   }
 
-  return { checkout, isLoading, error }
+  return { checkout, isLoading, error, setError }
 }

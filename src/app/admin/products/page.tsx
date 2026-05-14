@@ -10,7 +10,8 @@ import {
   Trash2,
   Sparkles,
   ExternalLink,
-  Loader2
+  Loader2,
+  X
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/utils/supabase/client'
@@ -32,6 +33,9 @@ export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [totalCount, setTotalCount] = useState(0)
+
+  const [editingProduct, setEditProduct] = useState<Product | null>(null)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   const fetchProducts = async () => {
     setLoading(true)
@@ -81,6 +85,75 @@ export default function AdminProducts() {
       window.open(url, '_blank')
     } else {
       alert('No download or Notion link available for this product yet.')
+    }
+  }
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
+      return
+    }
+
+    try {
+      const supabase = createClient()
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+
+      setProducts(products.filter(p => p.id !== id))
+      setTotalCount(prev => prev - 1)
+    } catch (error) {
+      console.error('Error deleting product:', error)
+      alert('Failed to delete product. Please try again.')
+    }
+  }
+
+  const handleToggleActive = async (id: string, currentStatus: boolean) => {
+    try {
+      const supabase = createClient()
+      const { error } = await supabase
+        .from('products')
+        .update({ is_active: !currentStatus })
+        .eq('id', id)
+
+      if (error) throw error
+
+      setProducts(products.map(p => 
+        p.id === id ? { ...p, is_active: !currentStatus } : p
+      ))
+    } catch (error) {
+      console.error('Error updating product status:', error)
+      alert('Failed to update product status.')
+    }
+  }
+
+  const handleUpdateProduct = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingProduct) return
+
+    try {
+      const supabase = createClient()
+      const { error } = await supabase
+        .from('products')
+        .update({
+          name: editingProduct.name,
+          price_cents: editingProduct.price_cents,
+          download_url: editingProduct.download_url,
+          is_active: editingProduct.is_active
+        })
+        .eq('id', editingProduct.id)
+
+      if (error) throw error
+
+      setProducts(products.map(p => 
+        p.id === editingProduct.id ? editingProduct : p
+      ))
+      setIsEditModalOpen(false)
+    } catch (error) {
+      console.error('Error updating product:', error)
+      alert('Failed to update product.')
     }
   }
 
@@ -161,10 +234,13 @@ export default function AdminProducts() {
                     <td className="py-4 text-sm font-medium">${(product.price_cents / 100).toFixed(0)}</td>
                     <td className="py-4 text-sm font-medium">{product.sales_count}</td>
                     <td className="py-4">
-                      <div className="flex items-center gap-1.5">
+                      <button 
+                        onClick={() => handleToggleActive(product.id, product.is_active)}
+                        className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                      >
                         <span className={`h-1.5 w-1.5 rounded-full ${product.is_active ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-zinc-500'}`} />
                         <span className="text-xs text-silver-slate">{product.is_active ? 'Active' : 'Draft'}</span>
-                      </div>
+                      </button>
                     </td>
                     <td className="py-4 text-right pr-2">
                       <div className="flex items-center justify-end gap-2">
@@ -175,10 +251,19 @@ export default function AdminProducts() {
                         >
                           <ExternalLink className="h-4 w-4" />
                         </button>
-                        <button className="p-2 rounded-lg bg-white/5 text-zinc-500 hover:text-white hover:bg-white/10 transition-all">
+                        <button 
+                          onClick={() => {
+                            setEditProduct({ ...product })
+                            setIsEditModalOpen(true)
+                          }}
+                          className="p-2 rounded-lg bg-white/5 text-zinc-500 hover:text-white hover:bg-white/10 transition-all"
+                        >
                           <Edit2 className="h-4 w-4" />
                         </button>
-                        <button className="p-2 rounded-lg bg-white/5 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 transition-all">
+                        <button 
+                          onClick={() => handleDelete(product.id, product.name)}
+                          className="p-2 rounded-lg bg-white/5 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                        >
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
@@ -225,6 +310,76 @@ export default function AdminProducts() {
           </Button>
         </Link>
       </div>
+
+      {/* Edit Modal */}
+      {isEditModalOpen && editingProduct && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-forge-gray border border-white/10 rounded-3xl p-8 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold font-display">Edit Product</h2>
+              <button 
+                onClick={() => setIsEditModalOpen(false)}
+                className="p-2 hover:bg-white/5 rounded-xl transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateProduct} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-silver-slate mb-1.5 uppercase tracking-wider">Product Name</label>
+                <input 
+                  type="text" 
+                  value={editingProduct.name}
+                  onChange={(e) => setEditProduct({ ...editingProduct, name: e.target.value })}
+                  className="w-full bg-deep-space/50 border border-white/5 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-silver-slate mb-1.5 uppercase tracking-wider">Price (Cents)</label>
+                <input 
+                  type="number" 
+                  value={editingProduct.price_cents}
+                  onChange={(e) => setEditProduct({ ...editingProduct, price_cents: parseInt(e.target.value) })}
+                  className="w-full bg-deep-space/50 border border-white/5 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all"
+                  required
+                />
+                <p className="mt-1 text-[10px] text-zinc-500">Current: ${(editingProduct.price_cents / 100).toFixed(2)}</p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-silver-slate mb-1.5 uppercase tracking-wider">Download/Notion URL</label>
+                <input 
+                  type="url" 
+                  value={editingProduct.download_url || ''}
+                  onChange={(e) => setEditProduct({ ...editingProduct, download_url: e.target.value })}
+                  className="w-full bg-deep-space/50 border border-white/5 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all"
+                  placeholder="https://..."
+                />
+              </div>
+
+              <div className="flex items-center gap-3 pt-4">
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="flex-1 bg-transparent border-white/5 text-white hover:bg-white/5 font-bold"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit"
+                  className="flex-1 bg-primary text-white hover:bg-primary/90 font-bold"
+                >
+                  Save Changes
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
