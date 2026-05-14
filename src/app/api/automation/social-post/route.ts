@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
-import { generateSocialPost } from '@/lib/forge-bot';
+import { ForgeBot, Product as ForgeProduct } from '@/lib/forge-bot';
 import { getBufferProfiles, createBufferUpdate } from '@/lib/buffer';
 
 export async function POST(request: Request) {
@@ -40,23 +40,30 @@ export async function POST(request: Request) {
     }
 
     // 2. Select a product (random for now)
-    const product = products[Math.floor(Math.random() * products.length)];
+    const dbProduct = products[Math.floor(Math.random() * products.length)];
 
-    // 3. Generate post content
-    // The existing generateSocialPost expects { title, value_prop }
-    // Our product has { name, description }
-    const postContent = await generateSocialPost({ 
-      title: product.name, 
-      value_prop: product.description 
-    });
+    // 3. Generate post content using ForgeBot
+    const bot = new ForgeBot();
+    
+    // Map DB product to ForgeBot Product interface
+    const forgeProduct: ForgeProduct = {
+      id: dbProduct.id,
+      title: dbProduct.name,
+      value_prop: dbProduct.description, // Fallback
+      description: dbProduct.description,
+      price: dbProduct.price_cents / 100,
+      type: dbProduct.category_id || 'Digital Asset',
+      features: dbProduct.features || [],
+      slug: dbProduct.slug
+    };
+
+    const post = await bot.generatePost(forgeProduct);
 
     // 4. Send to Buffer
     let profileIds = [];
     if (isTest && testProfileId) {
       profileIds = [testProfileId];
     } else {
-      // In a real scenario, we might want to post to all connected profiles
-      // or specific ones based on configuration.
       const profiles = await getBufferProfiles(bufferToken);
       profileIds = profiles.map(p => p.id);
     }
@@ -71,14 +78,14 @@ export async function POST(request: Request) {
     const result = await createBufferUpdate(
       bufferToken,
       profileIds,
-      postContent,
-      product.image_url ? { photo: `${process.env.NEXT_PUBLIC_SITE_URL}${product.image_url}` } : undefined
+      post.content,
+      dbProduct.image_url ? { photo: `${process.env.NEXT_PUBLIC_SITE_URL}${dbProduct.image_url}` } : undefined
     );
 
     return NextResponse.json({
       success: true,
       message: 'Social post sent to Buffer successfully.',
-      product: product.name,
+      product: dbProduct.name,
       buffer_result: result
     });
 

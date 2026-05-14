@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
       customer_email: user?.email,
       metadata: {
         productId: product.id,
-        userId: user?.id || null,
+        userId: user?.id || '',
       },
     })
 
