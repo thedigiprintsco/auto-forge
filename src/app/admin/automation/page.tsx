@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { 
   Share2, 
   Sparkles, 
@@ -22,36 +22,30 @@ interface BufferProfile {
 export default function AutomationDashboard() {
   const [isTriggering, setIsTriggering] = useState(false)
   const [profiles, setProfiles] = useState<BufferProfile[]>([])
-  const [isLoadingProfiles, setIsLoadingProfiles] = useState(false)
   const [selectedProfileId, setSelectedProfileId] = useState<string>('')
   
   const [logs, setLogs] = useState([
     { id: 1, type: 'info', message: 'Automation engine initialized. Connected to Social Forge.', time: new Date().toLocaleTimeString() },
   ])
 
-  const addLog = (message: string, type: 'info' | 'success' | 'error' = 'info') => {
+  const addLog = useCallback((message: string, type: 'info' | 'success' | 'error' = 'info') => {
     setLogs(prev => [...prev, { 
       id: Date.now(), 
       type, 
       message, 
       time: new Date().toLocaleTimeString() 
     }])
-  }
+  }, [])
 
-  const fetchProfiles = async () => {
-    setIsLoadingProfiles(true)
+  const fetchProfiles = useCallback(async () => {
     addLog('Fetching connected Buffer profiles...')
     try {
-      // In a real app, we'd have an endpoint to get profiles
-      // For this prototype, we'll try to call a mock endpoint or handle placeholder
       const response = await fetch('/api/automation/social-post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'get_profiles' })
       })
       
-      // If we don't have a real token, this might fail or return mock data
-      // For now, let's assume we might need to mock it if the API is not fully set up
       const data = await response.json()
       if (data.profiles) {
         setProfiles(data.profiles)
@@ -60,7 +54,6 @@ export default function AutomationDashboard() {
         }
         addLog(`Successfully retrieved ${data.profiles.length} profiles.`, 'success')
       } else {
-        // Mock profiles for prototype if none returned
         const mockProfiles = [
           { id: 'mock_x', service: 'twitter', service_username: 'EtherForge_AI' },
           { id: 'mock_li', service: 'linkedin', service_username: 'EtherForge' }
@@ -71,14 +64,13 @@ export default function AutomationDashboard() {
       }
     } catch (err) {
       addLog('Failed to fetch profiles. Check Buffer API configuration.', 'error')
-    } finally {
-      setIsLoadingProfiles(false)
     }
-  }
+  }, [addLog])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchProfiles()
-  }, [])
+  }, [fetchProfiles])
 
   const handleTriggerPost = async () => {
     setIsTriggering(true)

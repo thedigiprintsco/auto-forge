@@ -59,7 +59,7 @@ export default function Hero() {
             {isJoined ? (
               <div className="bg-ai-teal/10 border border-ai-teal/20 rounded-2xl p-4 flex items-center justify-center gap-3 animate-in fade-in zoom-in duration-500 text-center">
                 <Sparkles className="h-5 w-5 text-ai-teal flex-shrink-0" />
-                <span className="text-white font-bold">You're in the Forge. Welcome.</span>
+                <span className="text-white font-bold">You&apos;re in the Forge. Welcome.</span>
               </div>
             ) : (
               <form onSubmit={handleJoinWaitlist} className="flex flex-col sm:flex-row gap-3">

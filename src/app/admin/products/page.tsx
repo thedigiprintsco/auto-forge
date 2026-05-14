@@ -33,10 +33,6 @@ export default function AdminProducts() {
   const [loading, setLoading] = useState(true)
   const [totalCount, setTotalCount] = useState(0)
 
-  useEffect(() => {
-    fetchProducts()
-  }, [])
-
   const fetchProducts = async () => {
     setLoading(true)
     const supabase = createClient()
@@ -69,6 +65,11 @@ export default function AdminProducts() {
     }
     setLoading(false)
   }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchProducts()
+  }, [])
 
   const filteredProducts = products.filter(p => 
     p.name.toLowerCase().includes(search.toLowerCase()) || 

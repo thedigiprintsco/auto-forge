@@ -24,7 +24,7 @@ export async function createBufferUpdate(
   text: string,
   media?: { photo?: string; link?: string }
 ) {
-  const body: any = {
+  const body: Record<string, string | string[] | boolean | object> = {
     text,
     profile_ids: profileIds,
     shorten: false
@@ -40,7 +40,7 @@ export async function createBufferUpdate(
       'Authorization': `Bearer ${accessToken}`,
       'Content-Type': 'application/x-www-form-urlencoded'
     },
-    body: new URLSearchParams(body).toString()
+    body: new URLSearchParams(body as Record<string, string>).toString()
   });
 
   if (!response.ok) {

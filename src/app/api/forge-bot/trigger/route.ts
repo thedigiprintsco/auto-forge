@@ -25,11 +25,12 @@ export async function GET(request: Request) {
       status: 'success',
       data: result
     });
-  } catch (error: any) {
-    console.error('Forge Bot Trigger Error:', error);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error('Forge Bot Trigger Error:', message);
     return NextResponse.json({
       status: 'error',
-      message: error.message
+      message: message
     }, { status: 500 });
   }
 }
