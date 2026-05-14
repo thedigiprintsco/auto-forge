@@ -5,7 +5,6 @@ import {
   Share2, 
   Sparkles, 
   Terminal as TerminalIcon, 
-  Buffer as BufferIcon,
   Send,
   Loader2,
   RefreshCw,
