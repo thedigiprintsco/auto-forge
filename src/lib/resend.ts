@@ -1,6 +1,17 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Helper to initialize Resend safely for build-time environments
+const getResend = () => {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey || apiKey === 'placeholder') {
+    // Return a dummy object if API key is missing to prevent build-time crashes
+    // but provide enough structure to not throw immediately on property access.
+    return new Resend('re_dummy_key_for_build');
+  }
+  return new Resend(apiKey);
+};
+
+const resend = getResend();
 
 export async function sendOrderConfirmationEmail({
   to,
@@ -19,7 +30,12 @@ export async function sendOrderConfirmationEmail({
   }
 
   try {
+    // In a real scenario, we'd use a verified domain.
+    // For development, Resend allows sending to the owner's email from 'onboarding@resend.dev'.
     const from = process.env.EMAIL_FROM || 'onboarding@resend.dev';
+
+    // Since we're using HTML templates, we'll do a simple string replacement for now.
+    // In production, using a library like 'react-email' is better.
     const html = `
 <!DOCTYPE html>
 <html>
@@ -29,13 +45,15 @@ export async function sendOrderConfirmationEmail({
     <style>
         body { font-family: 'Geist', 'Inter', sans-serif; background-color: #050505; color: #FFFFFF; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 0 auto; background-color: #171717; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; overflow: hidden; }
+        .header { padding: 0; }
+        .header img { width: 100%; display: block; }
         .content { padding: 40px; }
         .footer { padding: 20px; text-align: center; font-size: 12px; color: #94A3B8; }
         h1 { color: #FFFFFF; font-size: 24px; margin-bottom: 20px; }
         p { color: #94A3B8; font-size: 16px; line-height: 1.6; }
         .button { display: inline-block; padding: 12px 24px; background: linear-gradient(to right, #3B82F6, #2DD4BF); color: #FFFFFF; text-decoration: none !important; border-radius: 8px; font-weight: bold; margin-top: 20px; }
         .order-details { margin-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px; }
-        .order-item { display: flex; justify_content: space-between; margin-bottom: 10px; }
+        .order-item { display: flex; justify-content: space-between; margin-bottom: 10px; }
         .item-name { font-weight: bold; color: #FFFFFF; }
         .item-price { color: #F59E0B; }
     </style>

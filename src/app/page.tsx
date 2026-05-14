@@ -5,6 +5,7 @@ import Bundles from '@/components/landing/Bundles'
 import Testimonials from '@/components/landing/Testimonials'
 import FAQ from '@/components/landing/FAQ'
 import Footer from '@/components/landing/Footer'
+import Chatbot from '@/components/landing/Chatbot'
 import { createClient } from '@/utils/supabase/server'
 
 export default async function Home() {
@@ -24,6 +25,7 @@ export default async function Home() {
       <Testimonials />
       <FAQ />
       <Footer />
+      <Chatbot />
     </main>
   )
 }
