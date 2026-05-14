@@ -24,11 +24,20 @@ async function updateProducts() {
     if (slug === 'solopreneur-os') image_url = '/solopreneur-os-thumb.png'
     if (slug === 'ai-marketing-power-pack') image_url = '/ai-marketing-power-pack-thumb.png'
     if (slug === 'adhd-focus-system') image_url = '/adhd-focus-system-thumb.png'
-    
+
+    // Determine download URL
+    let download_url = ''
+    if (product.type === 'notion' || product.title.toLowerCase().includes('os') || product.title.toLowerCase().includes('hub')) {
+      download_url = `https://notion.so/etherforge/${slug}`
+    } else {
+      download_url = `https://theetherforge.net/downloads/${slug}.pdf`
+    }
+
     const { data, error } = await supabase
       .from('products')
       .update({
         image_url,
+        download_url,
         metadata: {
           value_prop: product.value_prop,
           features: product.features,
