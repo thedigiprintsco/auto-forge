@@ -1,28 +1,3 @@
-<<<<<<< HEAD
-export async function generateSocialPost(product: { title: string, value_prop: string }): Promise<string> {
-  const apiKey = process.env.CLAUDE_API_KEY || process.env.OPENAI_API_KEY;
-
-  if (!apiKey) {
-    console.warn('AI API key missing for Forge Bot, using mock post generation.');
-    return mockGenerateSocialPost(product);
-  }
-
-  // Real LLM call would go here
-  // For now, return mock
-  return mockGenerateSocialPost(product);
-}
-
-function mockGenerateSocialPost(product: { title: string, value_prop: string }): string {
-  const hooks = [
-    "The future of work is here. 🚀",
-    "Stop trading time for money. ⚙️",
-    "Automation is the new gold rush. ⛏️",
-    "Build your empire while you sleep. 🏰"
-  ];
-  const hook = hooks[Math.floor(Math.random() * hooks.length)];
-
-  return `${hook}\n\nOur '${product.title}' is designed to give you total autonomy. \n\nValue: ${product.value_prop}\n\nGet started at EtherForge. [LINK] #EtherForge #Autonomy #AI`;
-=======
 import fs from 'fs';
 import path from 'path';
 import { createClient } from '@supabase/supabase-js';
@@ -190,20 +165,6 @@ export class ForgeBot {
     console.log('-------------------');
     
     // In production, integrate with Buffer/Typefully API
-    // Example for Buffer:
-    // const bufferToken = process.env.BUFFER_ACCESS_TOKEN;
-    // if (bufferToken) {
-    //   await fetch('https://api.bufferapp.com/1/updates/create.json', {
-    //     method: 'POST',
-    //     headers: { 'Authorization': `Bearer ${bufferToken}`, 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({
-    //       text: post.content,
-    //       media: post.imageUrl ? { photo: post.imageUrl } : undefined,
-    //       profile_ids: [process.env.BUFFER_PROFILE_ID]
-    //     })
-    //   });
-    // }
-    
     return true;
   }
 
@@ -227,5 +188,4 @@ export class ForgeBot {
       timestamp: new Date().toISOString()
     };
   }
->>>>>>> growth/forge-bot
 }

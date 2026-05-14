@@ -52,6 +52,14 @@ export async function POST(req: NextRequest) {
       },
     })
 
+    // Create a pending order record for abandoned cart tracking
+    await supabase.from('orders').insert({
+      customer_id: user?.id || null,
+      total_amount_cents: product.price_cents,
+      stripe_checkout_id: session.id,
+      status: 'pending',
+    })
+
     return NextResponse.json({ sessionId: session.id, url: session.url })
   } catch (err: unknown) {
     console.error('Checkout error:', err)

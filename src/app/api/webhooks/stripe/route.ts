@@ -28,15 +28,16 @@ export async function POST(req: NextRequest) {
     const productId = metadata?.productId
     const userId = metadata?.userId
 
-    // 1. Create the order record
+    // 1. Update or create the order record
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .insert({
-        customer_id: userId,
+      .upsert({
+        customer_id: userId || null,
         total_amount_cents: session.amount_total,
         stripe_checkout_id: session.id,
         status: 'completed',
-      })
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'stripe_checkout_id' })
       .select()
       .single()
 

@@ -1,9 +1,39 @@
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Loader2, Sparkles } from 'lucide-react'
 
 export default function Hero() {
+  const [email, setEmail] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [isJoined, setIsJoined] = useState(false)
+
+  const handleJoinWaitlist = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email) return
+    
+    setIsLoading(true)
+    try {
+      const response = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      
+      if (response.ok) {
+        setIsJoined(true)
+        setEmail('')
+      }
+    } catch (err) {
+      console.error('Failed to join waitlist:', err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <section className="relative overflow-hidden pt-32 pb-20 lg:pt-48 lg:pb-32 bg-deep-space">
       <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -24,16 +54,44 @@ export default function Hero() {
             Premium, AI-powered digital assets and Notion operating systems designed to build 
             your autonomous business empire. Stop trading time for money—start forging wealth.
           </p>
-          <div className="mt-10 flex items-center justify-center gap-6">
-            <Link href="#bundles">
-              <Button size="lg" className="h-12 px-8 bg-primary text-white hover:bg-primary/90 shadow-[0_0_20px_rgba(59,130,246,0.3)] cursor-pointer">
-                Explore the Forge
-              </Button>
+          
+          <div className="mt-10 max-w-md mx-auto">
+            {isJoined ? (
+              <div className="bg-ai-teal/10 border border-ai-teal/20 rounded-2xl p-4 flex items-center justify-center gap-3 animate-in fade-in zoom-in duration-500 text-center">
+                <Sparkles className="h-5 w-5 text-ai-teal flex-shrink-0" />
+                <span className="text-white font-bold">You're in the Forge. Welcome.</span>
+              </div>
+            ) : (
+              <form onSubmit={handleJoinWaitlist} className="flex flex-col sm:flex-row gap-3">
+                <input
+                  type="email"
+                  required
+                  placeholder="Enter your email for early access"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="flex-1 bg-forge-gray/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                />
+                <Button 
+                  type="submit" 
+                  disabled={isLoading}
+                  className="bg-primary text-white hover:bg-primary/90 px-8 h-auto py-3 font-bold rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all active:scale-95"
+                >
+                  {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Join the Waitlist'}
+                </Button>
+              </form>
+            )}
+            <p className="mt-4 text-[10px] text-zinc-600 uppercase tracking-widest font-bold">
+              Join 800+ solopreneurs building with AI.
+            </p>
+          </div>
+
+          <div className="mt-12 flex items-center justify-center gap-8 text-center">
+            <Link href="#bundles" className="text-sm font-bold text-silver-slate hover:text-white transition-colors">
+              Browse Bundles
             </Link>
-            <Link href="#bundles">
-              <Button size="lg" variant="outline" className="h-12 px-8 border-white/10 text-white hover:bg-white/5 cursor-pointer">
-                View Best Sellers
-              </Button>
+            <div className="h-1 w-1 rounded-full bg-zinc-800" />
+            <Link href="#philosophy" className="text-sm font-bold text-silver-slate hover:text-white transition-colors">
+              Our Philosophy
             </Link>
           </div>
         </div>
