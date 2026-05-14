@@ -9,7 +9,8 @@ import {
   Zap, 
   Settings,
   Shield,
-  LogOut
+  LogOut,
+  Share2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -18,6 +19,7 @@ const navigation = [
   { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'AI Forge', href: '/admin/forge', icon: Zap },
+  { name: 'Automation', href: '/admin/automation', icon: Share2 },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ]
 
