@@ -111,7 +111,6 @@ export class ForgeBot {
           max_tokens: 1024,
           messages: [{ role: "user", content: prompt }],
         });
-        // @ts-expect-error - Anthropic SDK response structure
         content = (response.content as any)?.[0]?.text || "";
       } else {
         // Mock fallback
