@@ -2,10 +2,6 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { createClient } from '@/utils/supabase/server';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || '',
-});
-
 export async function POST(req: Request) {
   try {
     const { messages } = await req.json();
@@ -17,6 +13,10 @@ export async function POST(req: Request) {
       );
     }
 
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+    
     const supabase = await createClient();
     
     // 1. Fetch products for context

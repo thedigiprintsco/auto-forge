@@ -5,23 +5,36 @@ import {
   DollarSign,
   ArrowUpRight,
   ArrowDownRight,
-  ExternalLink
+  ExternalLink,
+  LifeBuoy
 } from 'lucide-react'
+import { createClient } from '@/utils/supabase/server'
 
-const stats = [
-  { name: 'Total Revenue', value: '$12,482', change: '+12.5%', trendingUp: true, icon: DollarSign, color: 'text-amber-500' },
-  { name: 'Total Orders', value: '142', change: '+8.2%', trendingUp: true, icon: ShoppingBag, color: 'text-primary' },
-  { name: 'Conversion Rate', value: '3.2%', change: '-1.4%', trendingUp: false, icon: TrendingUp, color: 'text-ai-teal' },
-  { name: 'Waitlist', value: '842', change: '+24.5%', trendingUp: true, icon: Users, color: 'text-purple-500' },
-]
+export default async function AdminDashboard() {
+  const supabase = await createClient()
+  
+  const { count: supportCount } = await supabase
+    .from('support_requests')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'open')
 
-const recentOrders = [
-  { id: 'ORD-7281', customer: 'alex@example.com', product: 'Solopreneur OS', amount: '$97', status: 'Delivered', date: '2 mins ago' },
-  { id: 'ORD-7280', customer: 'sarah.j@tech.io', product: 'AI Marketing Pack', amount: '$49', status: 'Delivered', date: '15 mins ago' },
-  { id: 'ORD-7279', customer: 'mike@startup.com', product: 'ADHD Focus System', amount: '$67', status: 'Delivered', date: '1 hour ago' },
-]
+  const { count: waitlistCount } = await supabase
+    .from('waitlist')
+    .select('*', { count: 'exact', head: true })
 
-export default function AdminDashboard() {
+  const stats = [
+    { name: 'Total Revenue', value: '$12,482', change: '+12.5%', trendingUp: true, icon: DollarSign, color: 'text-amber-500' },
+    { name: 'Total Orders', value: '142', change: '+8.2%', trendingUp: true, icon: ShoppingBag, color: 'text-primary' },
+    { name: 'Support Cases', value: (supportCount || 0).toString(), change: 'Open', trendingUp: true, icon: LifeBuoy, color: 'text-ai-teal' },
+    { name: 'Waitlist', value: (waitlistCount || 842).toString(), change: '+24.5%', trendingUp: true, icon: Users, color: 'text-purple-500' },
+  ]
+
+  const recentOrders = [
+    { id: 'ORD-7281', customer: 'alex@example.com', product: 'Solopreneur OS', amount: '$97', status: 'Delivered', date: '2 mins ago' },
+    { id: 'ORD-7280', customer: 'sarah.j@tech.io', product: 'AI Marketing Pack', amount: '$49', status: 'Delivered', date: '15 mins ago' },
+    { id: 'ORD-7279', customer: 'mike@startup.com', product: 'ADHD Focus System', amount: '$67', status: 'Delivered', date: '1 hour ago' },
+  ]
+
   return (
     <div className="space-y-8">
       <div>
@@ -109,7 +122,7 @@ export default function AdminDashboard() {
                   <p className="text-sm font-medium">Waitlist Milestone</p>
                   <span className="text-[10px] text-zinc-500">2h ago</span>
                 </div>
-                <p className="text-xs text-silver-slate">800th user joined the waitlist from X/Twitter campaign.</p>
+                <p className="text-xs text-silver-slate">{waitlistCount || 842} users have joined the waitlist.</p>
               </div>
             </div>
           </div>

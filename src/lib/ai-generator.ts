@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import OpenAI from 'openai';
 
 const ProductSchema = z.object({
   title: z.string(),
@@ -20,17 +21,65 @@ const ProductSchema = z.object({
 export type GeneratedProduct = z.infer<typeof ProductSchema>;
 
 export async function generateProduct(niche: string, type: string): Promise<GeneratedProduct> {
-  const apiKey = process.env.CLAUDE_API_KEY || process.env.OPENAI_API_KEY;
+  const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
     console.warn('AI API key missing, using mock generation.');
     return mockGenerateProduct(niche, type);
   }
 
-  // Implementation for Claude/OpenAI would go here.
-  // For v1, we focus on the structure and the mock capability.
-  // This will be replaced with a real fetch call in v1.1
-  return mockGenerateProduct(niche, type);
+  const openai = new OpenAI({ apiKey });
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: `You are the EtherForge Product Architect. 
+          Your goal is to design a high-margin digital product for a specific niche.
+          
+          EtherForge Brand Guidelines:
+          - Aesthetic: Premium, Modern, Professional, Tech-forward.
+          - Philosophy: Systems over Hustle, AI-powered Autonomy.
+          - Tone: Sovereign, Direct, Insightful.
+          
+          Format your response as a JSON object that matches the following schema:
+          {
+            "title": "Clear, punchy name",
+            "value_prop": "One sentence benefit",
+            "description": "Engaging product description (2-3 paragraphs)",
+            "price": number (fair price between 19 and 97),
+            "type": "notion" | "prompts" | "bundle" | "guide",
+            "features": ["feature 1", "feature 2", "feature 3", "feature 4"],
+            "content_preview": {
+              "structure": ["module 1", "module 2", "module 3"],
+              "sample_content": "A short excerpt or description of the actual value provided"
+            },
+            "seo_metadata": {
+              "keywords": ["keyword1", "keyword2"],
+              "meta_description": "Compelling meta description"
+            }
+          }`
+        },
+        {
+          role: 'user',
+          content: `Generate a ${type} product for the following niche: ${niche}`
+        }
+      ],
+      response_format: { type: 'json_object' },
+      temperature: 0.8,
+    });
+
+    const content = response.choices[0].message.content;
+    if (!content) throw new Error('Empty response from AI');
+    
+    const parsed = JSON.parse(content);
+    return ProductSchema.parse(parsed);
+  } catch (error) {
+    console.error('AI Generation failed, falling back to mock:', error);
+    return mockGenerateProduct(niche, type);
+  }
 }
 
 function mockGenerateProduct(niche: string, type: string): GeneratedProduct {

@@ -4,6 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 
+import { getBufferProfiles, createBufferUpdate } from './buffer';
+
 export interface Product {
   id?: string;
   title: string;
@@ -53,7 +55,19 @@ export class ForgeBot {
 
       if (!error && data && data.length > 0) {
         const randomIndex = Math.floor(Math.random() * data.length);
-        return data[randomIndex];
+        const item = data[randomIndex];
+        
+        // Map DB fields to Product interface
+        return {
+          id: item.id,
+          title: item.name || item.title,
+          value_prop: item.metadata?.value_prop || item.description,
+          description: item.description,
+          price: (item.price_cents || 0) / 100,
+          type: item.type || item.category_id || 'Digital Asset',
+          features: item.metadata?.features || item.features || [],
+          slug: item.slug
+        };
       }
 
       // 2. Fallback to JSON
@@ -163,8 +177,45 @@ export class ForgeBot {
     if (post.imageUrl) console.log(`Image URL: ${post.imageUrl}`);
     console.log('-------------------');
     
-    // In production, integrate with Buffer/Typefully API
-    return true;
+    // Integration with Buffer
+    const bufferToken = process.env.BUFFER_ACCESS_TOKEN;
+    if (bufferToken && bufferToken !== 'placeholder') {
+      try {
+        const profiles = await getBufferProfiles(bufferToken);
+        const profileIds = profiles.map(p => p.id);
+        
+        if (profileIds.length > 0) {
+          await createBufferUpdate(
+            bufferToken,
+            profileIds,
+            post.content,
+            post.imageUrl ? { photo: post.imageUrl } : undefined
+          );
+          return true;
+        }
+      } catch (err) {
+        console.error('Buffer posting failed:', err);
+        return false;
+      }
+    }
+
+    return true; // Mock success if no token
+  }
+
+  /**
+   * Gets a fallback static background from the designer kit based on product type.
+   */
+  getStaticBackground(productType: string): string | undefined {
+    const mapping: Record<string, string> = {
+      'notion': '/design/social-kit/notion-post-bg.png',
+      'prompts': '/design/social-kit/ai-prompts-post-bg.png',
+      'bundle': '/design/social-kit/bundle-post-bg.png',
+      'pdf': '/design/social-kit/product-feature-card.png',
+      'guide': '/design/social-kit/product-feature-card.png'
+    };
+
+    const path = mapping[productType.toLowerCase()] || '/design/social-kit/product-feature-card.png';
+    return path;
   }
 
   /**
@@ -175,7 +226,17 @@ export class ForgeBot {
     if (!product) return { success: false, message: 'No product selected' };
     
     const post = await this.generatePost(product);
+    
+    // Try dynamic generation first
     post.imageUrl = await this.generateImage(product);
+    
+    // Fallback to static designer asset if dynamic fails or is skipped
+    if (!post.imageUrl) {
+      const staticPath = this.getStaticBackground(product.type);
+      if (staticPath) {
+        post.imageUrl = `${process.env.NEXT_PUBLIC_SITE_URL}${staticPath}`;
+      }
+    }
     
     const posted = await this.postContent(post);
     
@@ -184,6 +245,7 @@ export class ForgeBot {
       product: product.title,
       platform: post.platform,
       hasImage: !!post.imageUrl,
+      isDynamic: !post.imageUrl?.includes('/design/social-kit/'),
       timestamp: new Date().toISOString()
     };
   }

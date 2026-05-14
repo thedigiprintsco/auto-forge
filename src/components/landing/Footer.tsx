@@ -8,11 +8,11 @@ export default function Footer() {
         <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
           <div className="flex items-center gap-2">
             <Image
-              src="/logo.svg"
+              src="/logo-icon.png"
               alt="EtherForge Logo"
               width={24}
               height={24}
-              className="opacity-50"
+              className="opacity-50 grayscale hover:grayscale-0 transition-all"
             />
             <span className="text-lg font-semibold tracking-tighter text-zinc-500 font-display">EtherForge</span>
           </div>

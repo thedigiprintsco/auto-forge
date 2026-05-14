@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { 
   LayoutDashboard, 
@@ -8,9 +9,9 @@ import {
   ShoppingCart, 
   Zap, 
   Settings,
-  Shield,
   LogOut,
-  Share2
+  Share2,
+  LifeBuoy
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -20,6 +21,7 @@ const navigation = [
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'AI Forge', href: '/admin/forge', icon: Zap },
   { name: 'Automation', href: '/admin/automation', icon: Share2 },
+  { name: 'Support', href: '/admin/support', icon: LifeBuoy },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ]
 
@@ -30,9 +32,13 @@ export default function Sidebar() {
     <div className="flex h-full w-[260px] flex-col bg-forge-gray border-r border-white/5">
       <div className="flex h-16 items-center px-6">
         <Link href="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <Shield className="h-5 w-5 text-white" />
-          </div>
+          <Image
+            src="/logo-icon.png"
+            alt="EtherForge"
+            width={28}
+            height={28}
+            className="rounded-lg"
+          />
           <span className="text-lg font-bold font-display text-white tracking-tight">
             Ether<span className="text-primary">Forge</span>
           </span>
