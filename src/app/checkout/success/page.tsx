@@ -2,22 +2,56 @@
 
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { CheckCircle2, Download, ArrowRight } from 'lucide-react'
-import { useEffect, Suspense } from 'react'
+import { CheckCircle2, Download, ArrowRight, Loader2, AlertCircle } from 'lucide-react'
+import { useEffect, Suspense, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import posthog from 'posthog-js'
+import { getDownloadUrl } from './actions'
 
 function SuccessContent() {
   const searchParams = useSearchParams()
   const sessionId = searchParams.get('session_id')
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (sessionId) {
       posthog.capture('purchase_success', {
         stripe_session_id: sessionId,
       })
+      // Try to fetch download URL immediately
+      handleFetchDownload()
     }
   }, [sessionId])
+
+  const handleFetchDownload = async () => {
+    if (!sessionId) return
+    
+    setIsLoading(true)
+    setError(null)
+    
+    try {
+      const result = await getDownloadUrl(sessionId)
+      if (result.error) {
+        setError(result.error)
+      } else if (result.downloadUrl) {
+        setDownloadUrl(result.downloadUrl)
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDownload = () => {
+    if (downloadUrl) {
+      window.open(downloadUrl, '_blank')
+    } else {
+      handleFetchDownload()
+    }
+  }
 
   return (
     <div className="min-h-screen bg-deep-space text-white flex items-center justify-center p-4">
@@ -30,13 +64,28 @@ function SuccessContent() {
         
         <h1 className="text-3xl font-bold font-display mb-2">Order Confirmed!</h1>
         <p className="text-silver-slate mb-8">
-          Your digital assets have been forged. You should receive an email with your download links shortly.
+          Your digital assets have been forged. You can download them directly below or via the link sent to your email.
         </p>
 
+        {error && (
+          <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-start gap-3 text-left">
+            <AlertCircle className="h-5 w-5 shrink-0" />
+            <p>{error}</p>
+          </div>
+        )}
+
         <div className="space-y-4">
-          <Button className="w-full bg-primary text-white hover:bg-primary/90 py-6 text-lg font-bold shadow-[0_0_20px_rgba(59,130,246,0.3)]">
-            <Download className="mr-2 h-5 w-5" />
-            Download Assets Now
+          <Button 
+            onClick={handleDownload}
+            disabled={isLoading}
+            className="w-full bg-primary text-white hover:bg-primary/90 py-6 text-lg font-bold shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all active:scale-[0.98]"
+          >
+            {isLoading ? (
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            ) : (
+              <Download className="mr-2 h-5 w-5" />
+            )}
+            {downloadUrl ? 'Download Assets Now' : 'Forge Download Link'}
           </Button>
           
           <Link href="/" className="block">

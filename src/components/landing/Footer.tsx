@@ -17,10 +17,10 @@ export default function Footer() {
             <span className="text-lg font-semibold tracking-tighter text-zinc-500 font-display">EtherForge</span>
           </div>
           <div className="flex gap-8 text-sm text-zinc-500">
-            <Link href="#" className="hover:text-white">Privacy Policy</Link>
-            <Link href="#" className="hover:text-white">Terms of Service</Link>
-            <Link href="#" className="hover:text-white">Contact</Link>
-            <Link href="#" className="hover:text-white">Twitter</Link>
+            <Link href="/privacy" className="hover:text-white">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-white">Terms of Service</Link>
+            <Link href="mailto:support@etherforge.io" className="hover:text-white">Contact</Link>
+            <Link href="https://x.com/etherforge" className="hover:text-white">X (Twitter)</Link>
           </div>
           <p className="text-sm text-zinc-600">
             © {new Date().getFullYear()} Ether Forge. All rights reserved.

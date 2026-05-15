@@ -36,6 +36,7 @@ export default function Bundles({ initialProducts }: { initialProducts: Product[
     accent: index % 3 === 0 ? 'primary' : index % 3 === 1 ? 'secondary' : 'accent',
     featured: p.slug === 'ai-marketing-power-pack',
     image: p.image_url || '/hero.png',
+    slug: p.slug,
   }))
 
   return (
@@ -107,6 +108,15 @@ export default function Bundles({ initialProducts }: { initialProducts: Product[
                 >
                   {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Get Instant Access'}
                 </Button>
+
+                <div className="mt-4 flex justify-center">
+                  <a 
+                    href={`/products/${bundle.slug}`} 
+                    className="text-xs font-semibold text-silver-slate hover:text-white transition-colors uppercase tracking-widest"
+                  >
+                    Details & Visuals →
+                  </a>
+                </div>
                 
                 <ul className="mt-8 space-y-4 text-sm leading-6 text-silver-slate">
                   {bundle.features.map((feature: string) => (

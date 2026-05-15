@@ -244,10 +244,18 @@ export default function AdminProducts() {
                     </td>
                     <td className="py-4 text-right pr-2">
                       <div className="flex items-center justify-end gap-2">
+                        <Link 
+                          href={`/products/${product.slug}`}
+                          target="_blank"
+                          className="p-2 rounded-lg bg-white/5 text-primary hover:text-white hover:bg-primary/10 transition-all" 
+                          title="View Public Page"
+                        >
+                          <Sparkles className="h-4 w-4" />
+                        </Link>
                         <button 
                           onClick={() => handleViewUse(product.download_url)}
                           className="p-2 rounded-lg bg-white/5 text-ai-teal hover:text-white hover:bg-ai-teal/10 transition-all" 
-                          title="View/Use Product"
+                          title="View/Use Fulfillment Asset"
                         >
                           <ExternalLink className="h-4 w-4" />
                         </button>
