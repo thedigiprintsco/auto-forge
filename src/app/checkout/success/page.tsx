@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { CheckCircle2, Download, ArrowRight, Loader2, AlertCircle } from 'lucide-react'
+import { CheckCircle2, Download, ArrowRight, Loader2, AlertCircle, ExternalLink, Archive } from 'lucide-react'
 import { useEffect, Suspense, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import posthog from 'posthog-js'
@@ -11,7 +11,7 @@ import { getDownloadUrl } from './actions'
 function SuccessContent() {
   const searchParams = useSearchParams()
   const sessionId = searchParams.get('session_id')
-  const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
+  const [productData, setProductData] = useState<{ url: string, name: string, type: string } | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -36,7 +36,11 @@ function SuccessContent() {
       if (result.error) {
         setError(result.error)
       } else if (result.downloadUrl) {
-        setDownloadUrl(result.downloadUrl)
+        setProductData({
+          url: result.downloadUrl,
+          name: result.productName || 'Your Product',
+          type: result.productType || 'pdf'
+        })
       }
     } catch (err) {
       setError('An unexpected error occurred. Please try again.')
@@ -46,10 +50,29 @@ function SuccessContent() {
   }
 
   const handleDownload = () => {
-    if (downloadUrl) {
-      window.open(downloadUrl, '_blank')
+    if (productData?.url) {
+      if (productData.type === 'notion') {
+        window.open(`/api/fulfill/notion?sessionId=${sessionId}`, '_blank')
+      } else {
+        window.open(productData.url, '_blank')
+      }
     } else {
       handleFetchDownload()
+    }
+  }
+
+  const getButtonContent = () => {
+    if (isLoading) return <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+    if (!productData) return <><Download className="mr-2 h-5 w-5" /> Forge Fulfillment Link</>
+
+    switch (productData.type) {
+      case 'notion':
+        return <><ExternalLink className="mr-2 h-5 w-5" /> Duplicate Notion Template</>
+      case 'bundle':
+      case 'automation':
+        return <><Archive className="mr-2 h-5 w-5" /> Download Asset Bundle (ZIP)</>
+      default:
+        return <><Download className="mr-2 h-5 w-5" /> Download Product (PDF)</>
     }
   }
 
@@ -64,7 +87,7 @@ function SuccessContent() {
         
         <h1 className="text-3xl font-bold font-display mb-2">Order Confirmed!</h1>
         <p className="text-silver-slate mb-8">
-          Your digital assets have been forged. You can download them directly below or via the link sent to your email.
+          Your digital assets have been forged. Access them directly below or via the link sent to your email.
         </p>
 
         {error && (
@@ -80,12 +103,7 @@ function SuccessContent() {
             disabled={isLoading}
             className="w-full bg-primary text-white hover:bg-primary/90 py-6 text-lg font-bold shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all active:scale-[0.98]"
           >
-            {isLoading ? (
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            ) : (
-              <Download className="mr-2 h-5 w-5" />
-            )}
-            {downloadUrl ? 'Download Assets Now' : 'Forge Download Link'}
+            {getButtonContent()}
           </Button>
           
           <Link href="/" className="block">

@@ -92,6 +92,7 @@ export async function createBufferUpdate(
   const mutation = `
     mutation CreatePost($input: CreatePostInput!) {
       createPost(input: $input) {
+        __typename
         ... on PostActionSuccess {
           post {
             id
@@ -105,6 +106,15 @@ export async function createBufferUpdate(
           message
         }
         ... on NotFoundError {
+          message
+        }
+        ... on UnexpectedError {
+          message
+        }
+        ... on RestProxyError {
+          message
+        }
+        ... on LimitReachedError {
           message
         }
       }

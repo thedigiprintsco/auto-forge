@@ -38,7 +38,7 @@ export async function getDownloadUrl(sessionId: string) {
   // Get the download URL for the product
   const { data: product, error: productError } = await supabase
     .from('products')
-    .select('download_url, name')
+    .select('download_url, name, type')
     .eq('id', orderItem.product_id)
     .single()
 
@@ -47,5 +47,9 @@ export async function getDownloadUrl(sessionId: string) {
     return { error: 'Could not find product details.' }
   }
 
-  return { downloadUrl: product.download_url, productName: product.name }
+  return { 
+    downloadUrl: product.download_url, 
+    productName: product.name,
+    productType: product.type
+  }
 }
