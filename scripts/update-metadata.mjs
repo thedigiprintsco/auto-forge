@@ -24,6 +24,13 @@ async function updateProducts() {
     if (slug === 'solopreneur-os') image_url = '/solopreneur-os-thumb.png'
     if (slug === 'ai-marketing-power-pack') image_url = '/ai-marketing-power-pack-thumb.png'
     if (slug === 'adhd-focus-system') image_url = '/adhd-focus-system-thumb.png'
+    if (slug === 'ai-agency-starter-kit') image_url = '/ai-agency-thumb.png'
+    if (slug === 'ultimate-content-creator-hub') image_url = '/creator-hub-thumb.png'
+    if (slug === 'biohackers-performance-journal') image_url = '/biohacker-thumb.png'
+    if (slug === 'zero-to-one-automation-blueprints') image_url = '/automation-blueprints-thumb.png'
+    if (slug === 'the-digital-asset-playbook') image_url = '/asset-playbook-thumb.png'
+    if (slug === 'minimalist-finance-tracker') image_url = '/finance-tracker-thumb.png'
+    if (slug === 'saas-launch-checklist--ui-kit') image_url = '/saas-launch-thumb.png'
 
     // Determine download URL
     let download_url = ''

@@ -4,9 +4,9 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
 async function checkBuffer() {
-  const token = process.env.BUFFER_ACCESS_TOKEN;
+  const token = process.env.BUFFER_PERSONAL_API_KEY;
   if (!token || token === 'placeholder') {
-    console.error('Missing Buffer token');
+    console.error('Missing BUFFER_PERSONAL_API_KEY');
     return;
   }
 

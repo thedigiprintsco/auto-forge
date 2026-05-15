@@ -178,13 +178,15 @@ export class ForgeBot {
     console.log('-------------------');
     
     // Integration with Buffer
-    const bufferToken = process.env.BUFFER_ACCESS_TOKEN;
+    const bufferToken = process.env.BUFFER_PERSONAL_API_KEY;
     if (bufferToken && bufferToken !== 'placeholder') {
       try {
+        console.log('Fetching Buffer profiles via GraphQL...');
         const profiles = await getBufferProfiles(bufferToken);
         const profileIds = profiles.map(p => p.id);
         
         if (profileIds.length > 0) {
+          console.log(`Sending update to ${profileIds.length} profiles...`);
           await createBufferUpdate(
             bufferToken,
             profileIds,
@@ -192,9 +194,11 @@ export class ForgeBot {
             post.imageUrl ? { photo: post.imageUrl } : undefined
           );
           return true;
+        } else {
+          console.warn('No Buffer profiles found.');
         }
       } catch (err) {
-        console.error('Buffer posting failed:', err);
+        console.error('Buffer GraphQL posting failed:', err);
         return false;
       }
     }
@@ -203,9 +207,15 @@ export class ForgeBot {
   }
 
   /**
-   * Gets a fallback static background from the designer kit based on product type.
+   * Gets a fallback static background from the designer kit based on product type or specific title.
    */
-  getStaticBackground(productType: string): string | undefined {
+  getStaticBackground(product: Product): string | undefined {
+    // Specific high-res thumbnails from Designer
+    const titleLower = product.title.toLowerCase();
+    if (titleLower.includes('solopreneur os')) return '/solopreneur-os-thumb.png';
+    if (titleLower.includes('ai marketing')) return '/ai-marketing-power-pack-thumb.png';
+    if (titleLower.includes('adhd focus')) return '/adhd-focus-system-thumb.png';
+
     const mapping: Record<string, string> = {
       'notion': '/design/social-kit/notion-post-bg.png',
       'prompts': '/design/social-kit/ai-prompts-post-bg.png',
@@ -214,7 +224,7 @@ export class ForgeBot {
       'guide': '/design/social-kit/product-feature-card.png'
     };
 
-    const path = mapping[productType.toLowerCase()] || '/design/social-kit/product-feature-card.png';
+    const path = mapping[product.type.toLowerCase()] || '/design/social-kit/product-feature-card.png';
     return path;
   }
 
@@ -232,7 +242,7 @@ export class ForgeBot {
     
     // Fallback to static designer asset if dynamic fails or is skipped
     if (!post.imageUrl) {
-      const staticPath = this.getStaticBackground(product.type);
+      const staticPath = this.getStaticBackground(product);
       if (staticPath) {
         post.imageUrl = `${process.env.NEXT_PUBLIC_SITE_URL}${staticPath}`;
       }
