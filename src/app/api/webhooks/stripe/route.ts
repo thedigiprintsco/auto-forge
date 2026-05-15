@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
         stripe_checkout_id: session.id,
         status: 'completed',
         updated_at: new Date().toISOString(),
+        affiliate_id: metadata?.affiliateId || null,
       }, { onConflict: 'stripe_checkout_id' })
       .select()
       .single()
@@ -52,6 +53,27 @@ export async function POST(req: NextRequest) {
       product_id: productId,
       price_cents: session.amount_total,
     })
+
+    // 4. Create commission if affiliate exists
+    const affiliateId = metadata?.affiliateId
+    if (affiliateId) {
+      const { data: affiliate } = await supabase
+        .from('affiliates')
+        .select('commission_rate')
+        .eq('id', affiliateId)
+        .single()
+      
+      if (affiliate) {
+        const commissionAmount = Math.floor((session.amount_total! * Number(affiliate.commission_rate)) / 100)
+        
+        await supabase.from('commissions').insert({
+          affiliate_id: affiliateId,
+          order_id: order.id,
+          amount_cents: commissionAmount,
+          status: 'pending'
+        })
+      }
+    }
 
     console.log(`Order ${order.id} completed successfully for product ${productId}`)
     

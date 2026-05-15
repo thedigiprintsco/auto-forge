@@ -26,6 +26,23 @@ export async function POST(req: NextRequest) {
       throw new Error('NEXT_PUBLIC_SITE_URL is required')
     }
 
+    // Get affiliate code from cookie
+    const affiliateCode = req.cookies.get('ef_affiliate_code')?.value
+    let affiliateId = null
+
+    if (affiliateCode) {
+      const { data: affiliate } = await supabase
+        .from('affiliates')
+        .select('id')
+        .eq('referral_code', affiliateCode)
+        .eq('status', 'active')
+        .single()
+      
+      if (affiliate) {
+        affiliateId = affiliate.id
+      }
+    }
+
     // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -49,6 +66,7 @@ export async function POST(req: NextRequest) {
       metadata: {
         productId: product.id,
         userId: user?.id || '',
+        affiliateId: affiliateId || '',
       },
     })
 
@@ -58,6 +76,12 @@ export async function POST(req: NextRequest) {
       total_amount_cents: product.price_cents,
       stripe_checkout_id: session.id,
       status: 'pending',
+      affiliate_id: affiliateId,
+      metadata: {
+        email: user?.email || null,
+        productName: product.name,
+        productId: product.id
+      }
     })
 
     return NextResponse.json({ sessionId: session.id, url: session.url })

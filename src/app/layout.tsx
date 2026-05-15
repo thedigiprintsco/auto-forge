@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Sora } from "next/font/google";
 import "./globals.css";
 import { PHProvider } from "@/components/providers/posthog-provider";
 import PostHogPageView from "@/components/providers/posthog-pageview";
+import AffiliateTracker from "@/components/providers/AffiliateTracker";
 import { GoogleAnalytics } from "@next/third-parties/google";
 
 const geistSans = Geist({
@@ -43,6 +44,7 @@ export default function RootLayout({
       <PHProvider>
         <body className="min-h-full flex flex-col">
           <PostHogPageView />
+          <AffiliateTracker />
           {children}
           {gaId && <GoogleAnalytics gaId={gaId} />}
         </body>

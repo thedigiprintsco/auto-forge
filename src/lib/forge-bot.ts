@@ -210,11 +210,19 @@ export class ForgeBot {
    * Gets a fallback static background from the designer kit based on product type or specific title.
    */
   getStaticBackground(product: Product): string | undefined {
-    // Specific high-res thumbnails from Designer
     const titleLower = product.title.toLowerCase();
-    if (titleLower.includes('solopreneur os')) return '/solopreneur-os-thumb.png';
-    if (titleLower.includes('ai marketing')) return '/ai-marketing-power-pack-thumb.png';
-    if (titleLower.includes('adhd focus')) return '/adhd-focus-system-thumb.png';
+    
+    // Prioritize high-res ads from Designer
+    if (titleLower.includes('solopreneur os')) return '/design/ads/solopreneur-os-horizontal.png';
+    if (titleLower.includes('ai marketing')) return '/design/ads/ai-marketing-horizontal.png';
+    if (titleLower.includes('adhd focus')) return '/design/ads/adhd-focus-horizontal.png';
+    if (titleLower.includes('ai agency')) return '/design/ads/ai-agency-horizontal.png';
+    if (titleLower.includes('creator hub')) return '/design/ads/creator-hub-horizontal.png';
+    if (titleLower.includes('saas launch')) return '/design/ads/saas-launch-horizontal.png';
+    if (titleLower.includes('automation blueprints')) return '/design/ads/automation-horizontal.png';
+    if (titleLower.includes('digital asset playbook')) return '/design/ads/asset-playbook-horizontal.png';
+    if (titleLower.includes('finance tracker')) return '/design/ads/finance-tracker-horizontal.png';
+    if (titleLower.includes('biohacker')) return '/design/ads/biohacker-horizontal.png';
 
     const mapping: Record<string, string> = {
       'notion': '/design/social-kit/notion-post-bg.png',

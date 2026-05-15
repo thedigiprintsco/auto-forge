@@ -17,6 +17,7 @@ export default function Footer() {
             <span className="text-lg font-semibold tracking-tighter text-zinc-500 font-display">EtherForge</span>
           </div>
           <div className="flex gap-8 text-sm text-zinc-500">
+            <Link href="/affiliate/signup" className="hover:text-white">Affiliate Program</Link>
             <Link href="/privacy" className="hover:text-white">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-white">Terms of Service</Link>
             <Link href="mailto:support@etherforge.io" className="hover:text-white">Contact</Link>

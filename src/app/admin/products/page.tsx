@@ -360,7 +360,7 @@ export default function AdminProducts() {
               <div>
                 <label className="block text-xs font-medium text-silver-slate mb-1.5 uppercase tracking-wider">Download/Notion URL</label>
                 <input 
-                  type="url" 
+                  type="text" 
                   value={editingProduct.download_url || ''}
                   onChange={(e) => setEditProduct({ ...editingProduct, download_url: e.target.value })}
                   className="w-full bg-deep-space/50 border border-white/5 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all"

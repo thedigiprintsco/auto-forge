@@ -11,13 +11,17 @@ export function useCheckout() {
     setIsLoading(true)
     setError(null)
 
-    // Track checkout attempt
-    posthog.capture('checkout_started', { 
-      product_id: productId,
-      timestamp: new Date().toISOString()
-    })
-
     try {
+      // Track checkout attempt (inside try-catch for safety)
+      try {
+        posthog.capture('checkout_started', { 
+          product_id: productId,
+          timestamp: new Date().toISOString()
+        })
+      } catch (phErr) {
+        console.warn('PostHog capture failed:', phErr)
+      }
+
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: {
@@ -43,10 +47,14 @@ export function useCheckout() {
       setError(errorMessage)
       
       // Track checkout error
-      posthog.capture('checkout_error', {
-        product_id: productId,
-        error: errorMessage
-      })
+      try {
+        posthog.capture('checkout_error', {
+          product_id: productId,
+          error: errorMessage
+        })
+      } catch (phErr) {
+        console.warn('PostHog capture failed:', phErr)
+      }
     } finally {
       setIsLoading(false)
     }
