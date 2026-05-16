@@ -25,10 +25,14 @@ export async function POST(req: NextRequest) {
     // Get current user (if any)
     const { data: { user } } = await supabase.auth.getUser()
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
-    if (!siteUrl) {
-      throw new Error('NEXT_PUBLIC_SITE_URL is required')
-    }
+    // Determine site URL with fallbacks
+    console.log('NEXT_PUBLIC_SITE_URL:', process.env.NEXT_PUBLIC_SITE_URL)
+    console.log('VERCEL_URL:', process.env.VERCEL_URL)
+
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ||
+                   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://www.theetherforge.net')
+
+    console.log('Using siteUrl for checkout:', siteUrl)
 
     // Get affiliate code from cookie
     const affiliateCode = req.cookies.get('ef_affiliate_code')?.value
@@ -105,7 +109,9 @@ export async function POST(req: NextRequest) {
       // We don't want to block the checkout if order tracking fails
     }
 
-    return NextResponse.json({ sessionId: session.id, url: session.url })
+    const response = NextResponse.json({ sessionId: session.id, url: session.url })
+    response.headers.set('X-Checkout-Version', '2.0.0')
+    return response
   } catch (err: unknown) {
     console.error('Checkout error:', err)
     return NextResponse.json(
