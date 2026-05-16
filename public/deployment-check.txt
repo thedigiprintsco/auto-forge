@@ -1,0 +1,2 @@
+This deployment is from commit 13b1b5d (fixed stripe init) at Sat May 16 19:57:00 GMT 2026.
+If you see this, Vercel is connected to the right repo.
