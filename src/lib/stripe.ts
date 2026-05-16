@@ -1,12 +1,13 @@
 import Stripe from 'stripe'
 
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY || process.env.STRIP_SECRET_KEY
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY
 
 if (!stripeSecretKey) {
-  console.warn('STRIPE_SECRET_KEY is missing! Checkout will fail.')
+  // We throw an explicit error here so the logs show EXACTLY what is wrong
+  throw new Error('CRITICAL: STRIPE_SECRET_KEY is not defined in environment variables.')
 }
 
-export const stripe = new Stripe(stripeSecretKey || 'sk_test_placeholder', {
+export const stripe = new Stripe(stripeSecretKey, {
   // @ts-expect-error Stripe version might be newer than types
   apiVersion: '2024-06-20',
   appInfo: {
