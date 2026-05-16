@@ -7,6 +7,7 @@ export async function GET() {
     timestamp: new Date().toISOString(),
     env: {
       hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
+      stripeKeySnippet: process.env.STRIPE_SECRET_KEY ? `${process.env.STRIPE_SECRET_KEY.slice(0, 7)}...${process.env.STRIPE_SECRET_KEY.slice(-5)}` : 'missing',
       siteUrl: process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL || 'not set'
     }
   })
