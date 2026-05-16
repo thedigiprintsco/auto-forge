@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function POST(req: NextRequest) {
   try {
     const { productId } = await req.json()
+    console.log('Checkout API called for productId:', productId)
     const supabase = await createClient()
 
     // Fetch product details
@@ -15,8 +16,11 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (error || !product) {
+      console.error('Product not found or database error:', error)
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
     }
+
+    console.log('Product found:', product.name)
 
     // Get current user (if any)
     const { data: { user } } = await supabase.auth.getUser()
@@ -44,6 +48,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Create Stripe Checkout Session
+    console.log('Creating Stripe session for product:', product.name)
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
