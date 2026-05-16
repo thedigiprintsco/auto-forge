@@ -71,18 +71,34 @@ export async function POST(req: NextRequest) {
     })
 
     // Create a pending order record for abandoned cart tracking
-    await supabase.from('orders').insert({
-      customer_id: user?.id || null,
-      total_amount_cents: product.price_cents,
-      stripe_checkout_id: session.id,
-      status: 'pending',
-      affiliate_id: affiliateId,
-      metadata: {
-        email: user?.email || null,
-        productName: product.name,
-        productId: product.id
+    try {
+      const { error: insertError } = await supabase.from('orders').insert({
+        customer_id: user?.id || null,
+        total_amount_cents: product.price_cents,
+        stripe_checkout_id: session.id,
+        status: 'pending',
+        affiliate_id: affiliateId,
+        metadata: {
+          email: user?.email || null,
+          productName: product.name,
+          productId: product.id
+        }
+      })
+
+      if (insertError) {
+        console.warn('First order insert attempt failed, trying fallback:', insertError)
+        // Fallback: Try without metadata and affiliate_id if they are causing issues
+        await supabase.from('orders').insert({
+          customer_id: user?.id || null,
+          total_amount_cents: product.price_cents,
+          stripe_checkout_id: session.id,
+          status: 'pending'
+        })
       }
-    })
+    } catch (insertErr) {
+      console.error('Failed to create pending order:', insertErr)
+      // We don't want to block the checkout if order tracking fails
+    }
 
     return NextResponse.json({ sessionId: session.id, url: session.url })
   } catch (err: unknown) {
